@@ -155,6 +155,7 @@ void Magic_Processing::BK_Filters (pcl::PointCloud<PointT>::Ptr & inputcloud,Eig
 	if (wall_coefficient.size() != 4)
 	std::cout<<"Invalid number of model coefficients "<<wall_coefficient.size()<<std::endl;
 	// Iterate through the 3d points and calculate the distances to the plane
+    std::cout<< "filter"<<std::endl;
     for (unsigned int i = 0; i < inputcloud->points.size(); ++i)
 	{
 		Eigen::Vector4f pt (inputcloud->points[i].x,
@@ -250,7 +251,7 @@ void Magic_Processing::Projection(std::vector<pcl::PointCloud<PointT>,Eigen::ali
 	pcl::ProjectInliers<PointT> project;
 	project.setModelType (pcl::SACMODEL_PLANE);
 	project.setModelCoefficients (g_coefficients);
-        for(unsigned int i = 0; i < 3; i++)
+        for(unsigned int i = 0; i < inputcloud.size(); i++)
 	{ 
 	  //      temp_incloud->swap(inputcloud[i]);
                 temp_incloud = inputcloud[i].makeShared();
@@ -270,15 +271,15 @@ void Magic_Processing::Projection(std::vector<pcl::PointCloud<PointT>,Eigen::ali
  * output: outputcloud
  */
 
-void Magic_Processing::rotation(pcl::PointCloud<PointT>::Ptr & inputcloud,pcl::PointCloud<PointT>::Ptr & outputcloud)
+void Magic_Processing::Rotation(pcl::PointCloud<PointT>::Ptr & inputcloud,pcl::PointCloud<PointT>::Ptr & outputcloud)
 {
     	outputcloud->clear();// empty the output
 	// compute angle 
-	float a_z = atan2( ground_coefficients[1],ground_coefficients[0]); // rotation around z axis   
+	float a_z = -atan2( ground_coefficients[0],-ground_coefficients[1]); // rotation around z axis   
 
 	float a_y = atan2( ground_coefficients[2],ground_coefficients[0]); // rotation around y axis   
 
-	float a_x = atan2( ground_coefficients[1],ground_coefficients[2]); // rotation around z axis  
+	float a_x = -atan2( ground_coefficients[2],-ground_coefficients[1]); // rotation around z axis  
 	
 	Eigen::Matrix3f rot_Matrix_z; // rotation matrix_z
 
@@ -352,12 +353,12 @@ void Magic_Processing::rotation(pcl::PointCloud<PointT>::Ptr & inputcloud,pcl::P
 
 }
 //overloading
-void Magic_Processing::rotation(std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector )
+void Magic_Processing::Rotation(std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector )
 {
     pcl::PointCloud<PointT>::Ptr tempcloud (new pcl::PointCloud<PointT>);
 	for (unsigned int i = 0; i < input_vector.size(); i++)
 	{
-		rotation(input_vector[i],tempcloud);
+		Rotation(input_vector[i],tempcloud);
         output_vector.push_back(tempcloud->makeShared());		
 	}	
 }
@@ -367,22 +368,50 @@ void Magic_Processing::rotation(std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::
  *  output: output cloud
  */
 
-void Magic_Processing::twoD_Convex_Hull (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud)
+void Magic_Processing::TwoD_Convex_Hull (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud)
 {
 	Conv_Conc c_vex;	
     c_vex.convex (inputcloud,outputcloud);
+}
 
+  
+void Magic_Processing::TwoD_Convex_Hull (std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector )
+{
+//	pcl::PointCloud<PointT>::Ptr temp_cloud (new pcl::PointCloud<PointT>);
+    for(unsigned int i = 0; i< input_vector.size(); i++)
+    {
+		Conv_Conc c_vex;
+		c_vex.convex (input_vector[i],c_vex.convex_hull);
+		output_vector.push_back(c_vex.convex_hull->makeShared());
+
+	}
 
 }
 
+/** Sample down the convex hull pointcloud
+ *  input: input cloud or input cloud vector
+ *  output: output cloud or output cloud vector
+ */
 
+void Magic_Processing::Sample_D_Hull (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud)
+{
+	SampleDown_con s_d;
+	s_d.SampleDown(inputcloud,outputcloud);
 
+}
+// member function  overloading
+void Magic_Processing::Sample_D_Hull (std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector )
+{
+   // pcl::PointCloud<PointT>::Ptr temp_cloud (new pcl::PointCloud<PointT>);
+    
+	SampleDown_con s_d;
+	for(unsigned int i = 0; i < input_vector.size(); i++) 
+	{
+		s_d.SampleDown(input_vector[i],s_d.Sample_hull);
+        output_vector.push_back(s_d.Sample_hull->makeShared());
+  	}
 
-
-
-
-
-
+}
 
 
 
