@@ -1,4 +1,5 @@
 #include "Magic_Processing.h"
+// some comments
 typedef pcl::PointXYZ PointT;
 int main()
 {
@@ -22,10 +23,14 @@ int main()
     std::cout<<"downs"<<magic.m_cloud_downS->points.size()<<std::endl;
     std::cout<<"filtered"<<magic.m_cloud_filtered->points.size()<<std::endl;
     magic.Clustering (magic.m_cloud_filtered,magic.m_cloud_cluster_points,3);//clustering
-    magic.Projection (magic.m_cloud_cluster_points); 
-    magic.rotation (magic.m_proj_vector,magic.m_rot_proj_vector);  
-    pcl::PointCloud<pcl::PointXYZ>::Ptr t (new pcl::PointCloud<PointT>);
-  //  magic.rotation (magic.m_proj_vector[0],t); 
+
+    magic.Projection (magic.m_cloud_cluster_points);// projection 
+
+    magic.Rotation (magic.m_proj_vector,magic.m_rot_proj_vector);// rotation  
+	magic.TwoD_Convex_Hull (magic.m_rot_proj_vector,magic.m_convex_vector);
+//    pcl::PointCloud<pcl::PointXYZ>::Ptr t (new pcl::PointCloud<PointT>);
+    magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector);
+
     pcl::PointCloud<pcl::PointXYZ>::Ptr v_case;
  
  //   pcl::PointCloud<pcl::PointXYZ>::Ptr v_case (n 
@@ -34,15 +39,21 @@ int main()
 //		viewer->addPointCloud<PointT>(magic.m_cloud_filtered,"t");
         std::stringstream s1;
         std::stringstream s2;
+        std::stringstream s3;
         s1<<"v"<<i;
         s2<<"vv"<<i;
+        s3<<"vvv"<<i;
+        
 
         v_case = magic.m_cloud_cluster_points[i].makeShared();// actually it makes a copy of pointcloud, it should be deleted manually         
         pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(magic.m_rot_proj_vector[i], 0, 255, 0);
 		
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color_1(magic.m_Samp_vector[i], 255, 0, 0);
 	    viewer->addPointCloud<PointT>(v_case,s1.str());
-        viewer->addPointCloud<PointT>(magic.m_rot_proj_vector[i],single_color,s2.str());
-    }            
+       // viewer->addPointCloud<PointT>(magic.m_convex_vector[i],single_color,s2.str());
+               
+        viewer->addPointCloud<PointT>(magic.m_Samp_vector[i],single_color_1,s3.str());
+     }        
                 
   //  viewer->resetCameraViewpoint("vv0");
     viewer->addCoordinateSystem (1.0);
