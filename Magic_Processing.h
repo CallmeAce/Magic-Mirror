@@ -57,6 +57,10 @@ class Magic_Processing
       	    std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > >  m_proj_vector; //cluster projection points
        
       	    std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > >  m_rot_proj_vector; //cluster projection points
+      	    std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > >  m_convex_vector; //convex points
+
+      	    std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > >  m_Samp_vector; // convex points after being sampled down
+      	//    pcl::PointCloud<PointT> m_cloud_cluster_points; //cluster points
       	//    pcl::PointCloud<PointT> m_cloud_cluster_points; //cluster points
             Magic_Processing(); //constractor                         
 			
@@ -90,17 +94,20 @@ class Magic_Processing
 	   	    void Projection (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud);
             void Projection (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud, pcl::ModelCoefficients::Ptr coefficients);
             // rotate the points clouds according to certain plane
-            void rotation (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud);
+            void Rotation (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud);
 
-			void rotation(std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector );
-			// Compute the concave hull 
-            void twoD_Convex_Hull (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud);           
-        	
+			void Rotation(std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector );
+			// Compute the convex hull 
+            void TwoD_Convex_Hull (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud);           
+
+			void TwoD_Convex_Hull (std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector );
+
+			// sample down the conc_conv hull 
+            void Sample_D_Hull (pcl::PointCloud<PointT>::Ptr & inputcloud, pcl::PointCloud<PointT>::Ptr & outputcloud);           
+
+			void Sample_D_Hull (std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector );
 
 };
-
-
-
 
 
 //----------------------------------------------------------------------------------------------------
@@ -312,15 +319,87 @@ class Conv_Conc
 		}
     // print the result
 		std::cout<<"the number of convex points is : "<< output_points->size()<<std::endl;
-    pcl::PCDWriter writer;
-    writer.write("convex_hull_1.pcd",*output_points,false);
+//    pcl::PCDWriter writer;
+//    writer.write("convex_hull_1.pcd",*output_points,false);
 
   };
 
 
 };
 
+//--------------------------------------------------------------------
 
+//-----------------------Sample Down Algorithm------------------------
+class SampleDown_con
+
+{
+	public:
+
+			typedef pcl::PointXYZ PointT;
+
+  //container of the downsized sample hull
+			pcl::PointCloud<PointT>::Ptr Sample_hull;
+
+  //constructor 
+
+			SampleDown_con () : Sample_hull(new pcl::PointCloud<PointT>){}
+
+			// distance between points
+			double Euclidean_D(PointT & a,PointT & b)
+
+			{
+					double dx = a.x-b.x;
+					double dz = a.z-b.z;
+					double dist = sqrt( dx * dx + dz * dz);
+					return (dist);
+			}
+
+			// tangent value
+			double Tan_radians(PointT & a, PointT & b)
+			{
+					double dx = b.x - a.x;
+					double dz = b.z - a.z;
+					double tan_ra = dz/dx;
+					//tan_ra = abs(tan_ra);
+					return (tan_ra);
+			}
+			//  Method Definition
+			void SampleDown(pcl::PointCloud<PointT>::Ptr &cloud_hull,pcl::PointCloud<PointT>::Ptr & Sample_hull)
+
+			{
+                    Sample_hull->clear();
+					double tan_cum  = 0;
+					double dist_cum = 0;
+					Sample_hull->points.push_back (cloud_hull->points[0]);
+					for (int i = 0; i< cloud_hull->points.size()-2; ++i)
+					{
+							double d_tan_1 = Tan_radians (cloud_hull->points[i],cloud_hull->points[i+1]);
+							double d_tan_2 = Tan_radians (cloud_hull->points[i+1],cloud_hull->points[i+2]);
+							double d_tan_d = d_tan_2 - d_tan_1;
+
+							tan_cum = tan_cum + d_tan_d;
+							double dist_1   = Euclidean_D(cloud_hull->points[i],cloud_hull->points[i+1]);
+							dist_cum = dist_cum + dist_1;
+
+							if ( dist_cum>0.01 && abs(tan_cum) > 0.9)
+							{
+									//     Sample_hull->points.push_back (cloud_hull->point[i];
+									Sample_hull->points.push_back (cloud_hull->points[i+1]);
+									tan_cum  = 0;
+									dist_cum = 0;
+							}
+					}
+					// removeDuplivates (Sample_hull);
+					// std::cout<<cloud_hull->points[1].x<<std::endl;
+					int num = (int)  cloud_hull->points.size();
+					Sample_hull->points.push_back(cloud_hull->points[num-1]);
+					Sample_hull->width = Sample_hull->points.size();
+					Sample_hull->height = 1;
+					Sample_hull->is_dense = true;
+					std::cout << "Sample_hull has :" << Sample_hull->points.size() << "data points."<<std::endl;
+
+			}
+};
 
 
 
