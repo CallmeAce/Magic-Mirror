@@ -1,6 +1,6 @@
 #include "Magic_Mirror.h"     
 
-
+// hello
 
 
 Magic_Mirror::Magic_Mirror () : viewer ("3D Viewer") //constractor initialization
