@@ -4,6 +4,8 @@
 
 
 Magic_Mirror::Magic_Mirror () : viewer ("3D Viewer") //constractor initialization
+
+
 { 
   angular_resolution  = pcl::deg2rad(2.0f);
   R_coordinate_frame  = pcl::RangeImage::CAMERA_FRAME;
