@@ -23,10 +23,11 @@ Magic_Mirror::~Magic_Mirror ()
  */
 void Magic_Mirror::cloud_cb_(const pcl::PointCloud<PointT>::ConstPtr &cloud)
 {  
-	m_cloud_1 = cloud->makeShared();
+	*m_cloud_1 = *cloud;
+ m_cloud_3 = cloud->makeShared();
+	std::cout<<"hello"<<std::endl;
 }
 
-//TODO
 void Magic_Mirror::Map_updating ()
 {
 }
@@ -49,7 +50,7 @@ void Magic_Mirror::run()
 	boost::function<void (const pcl::PointCloud<PointT>::ConstPtr&)> f = boost::bind (&Magic_Mirror::cloud_cb_, this, _1);
 	interface->registerCallback (f);
 	interface->start ();
-        sleep(1);
+         boost::this_thread::sleep (boost::posix_time::seconds (1));
 	Magic_Processing magic;
 	magic.Set_ROI (1,3);
     		// Add grids in the visualizer
@@ -91,10 +92,10 @@ void Magic_Mirror::run()
 		magic.BK_Filters(magic.m_cloud_downS,magic.wall_coefficient, magic.m_cloud_filtered, 0.02);// remove ground points and wall plane points
 		magic.Clustering (magic.m_cloud_filtered, magic.m_cloud_cluster_points, 3);//clustering
 		magic.Projection (magic.m_cloud_cluster_points);// projection
-		magic.Rotation (magic.m_proj_vector,magic.m_rot_proj_vector);// rotation
-		magic.TwoD_Convex_Hull (magic.m_rot_proj_vector,magic.m_convex_vector); //convex data
-		magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector); // the result of Magic Processing
-
+   //		magic.Rotation (magic.m_proj_vector,magic.m_rot_proj_vector);// rotation
+	//	magic.TwoD_Convex_Hull (magic.m_rot_proj_vector,magic.m_convex_vector); //convex data
+	//	magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector); // the result of Magic Processing
+        std::cout<< "strange....."<<magic.m_Samp_vector.size()<<std::endl;
 			// Add pointcloud
 		pcl::PointCloud<pcl::PointXYZ>::Ptr v_case;
 		for(unsigned int i = 0;i<magic.m_cloud_cluster_points.size();i++)
@@ -108,37 +109,44 @@ void Magic_Mirror::run()
 			s3<<"vvv"<<i;
 
 
-			v_case = magic.m_cloud_cluster_points[i].makeShared();// actually it makes a copy of pointcloud, it should be deleted manually         
-			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(magic.m_rot_proj_vector[i], 0, 255, 0);
+//			v_case = magic.m_cloud_cluster_points[i].makeShared();// actually it makes a copy of pointcloud, it should be deleted manually         
+//			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(magic.m_rot_proj_vector[i], 0, 255, 0);
 
-			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color_1(magic.m_Samp_vector[i], 255, 0, 0);
-			viewer->addPointCloud<PointT>(v_case,s1.str());
-			viewer->addPointCloud<PointT>(magic.m_Samp_vector[i],single_color_1,s3.str());
-		}
-
-		//  viewer->resetCameraViewpoint("vv0");
+	//		pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color_1(magic.m_Samp_vector[i], 255, 0, 0);
+//			viewer->addPointCloud<PointT>(v_case,s1.str());
+	//		viewer->addPointCloud<PointT>(magic.m_Samp_vector[i],single_color_1,s3.str());
+		
+        	}
+		
+ boost::this_thread::sleep (boost::posix_time::seconds (1));
+//  viewer->resetCameraViewpoint("vv0");
 
 	   // while(!viewer->wasStopped())
 	   // {
-	        viewer->spinOnce (100);
  
-	//		viewer->addPointCloud<PointT>(m_cloud_1,"1");
-            
-		for(unsigned int i = 0;i<magic.m_cloud_cluster_points.size();i++)
-        {
-		 	std::stringstream s1;
-			std::stringstream s2;
-			std::stringstream s3;
-			s1<<"v"<<i;
-			s2<<"vv"<<i;
-			s3<<"vvv"<<i;
+			viewer->addPointCloud<PointT>(m_cloud_3,"1");
+                        std::cout<<"cloud grabber"<< m_cloud_3->points.size()<<std::endl;
+       
+	    viewer->spinOnce (100);
+                      viewer->removePointCloud("1");
 
-
- 		    viewer->removePointCloud(s1.str());
-            viewer->removePointCloud(s2.str());
-            viewer->removePointCloud(s3.str());
-        }
-  // 	}
+//
+//
+//		for(unsigned int i = 0;i<magic.m_cloud_cluster_points.size();i++)
+//        {
+//		 	std::stringstream s1;
+//			std::stringstream s2;
+//			std::stringstream s3;
+//			s1<<"v"<<i;
+//			s2<<"vv"<<i;
+//			s3<<"vvv"<<i;
+//
+//
+// 		    viewer->removePointCloud(s1.str());
+////            viewer->removePointCloud(s2.str());
+////            viewer->removePointCloud(s3.str());
+//        }
+//  // 	}
 
 	}
 
