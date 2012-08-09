@@ -337,7 +337,7 @@ class SampleDown_con
 
 			typedef pcl::PointXYZ PointT;
 
-  //container of the downsized sample hull
+  //container of the downsized sample: hull
 			pcl::PointCloud<PointT>::Ptr Sample_hull;
 
   //constructor 
