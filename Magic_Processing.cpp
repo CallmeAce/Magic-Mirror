@@ -29,7 +29,7 @@ void Magic_Processing::Cloud_ROI (pcl::PointCloud<PointT>::Ptr & inputcloud,pcl:
 	pcl::PassThrough<PointT> z_pass;
     z_pass.setInputCloud (inputcloud);
     z_pass.setFilterFieldName("z");
-	z_pass.setFilterLimits (0.2,_Roi_z);
+	z_pass.setFilterLimits (0.4,_Roi_z);
     z_pass.filter (* temp_cloud);
     std::cout<<"what"<<_Roi_z<<std::endl;
     std::cout<< temp_cloud->points.size()<<std::endl;
@@ -37,7 +37,7 @@ void Magic_Processing::Cloud_ROI (pcl::PointCloud<PointT>::Ptr & inputcloud,pcl:
     pcl::PassThrough<PointT> y_pass;
     y_pass.setInputCloud (temp_cloud);
     y_pass.setFilterFieldName ("y");
-    y_pass.setFilterLimits (0.2,_Roi_y);
+    y_pass.setFilterLimits (_Roi_y,0.5);
     y_pass.filter (*outputcloud);
     std::cout<< outputcloud->points.size()<<std::endl;
 }
@@ -57,7 +57,7 @@ void Magic_Processing::Cloud_ROI (pcl::PointCloud<PointT>::Ptr & inputcloud)
     pcl::PassThrough<PointT> y_pass;
     y_pass.setInputCloud (temp_cloud);
     y_pass.setFilterFieldName ("y");
-    y_pass.setFilterLimits (-0.2,_Roi_y);
+    y_pass.setFilterLimits (_Roi_y,0.5);
     y_pass.filter (*m_cloud_roi);
 }
 
@@ -98,7 +98,7 @@ void Magic_Processing::Octree_Compression (pcl::PointCloud<PointT>::Ptr & inputc
 void Magic_Processing::Ransac_ground_plane (pcl::PointCloud<PointT>::Ptr & inputcloud, Eigen::VectorXf & outputcoefficient)
 {
 	// limit the range scope of the pointclouds then run the Ransac algorithm
-    Set_ROI (1,2.5);
+    Set_ROI (-0.2,2.5);
     pcl::PointCloud<PointT>::Ptr temp_output (new pcl::PointCloud<PointT>);
 	Cloud_ROI (inputcloud, temp_output);
   	if(temp_output->points.size()>300)
