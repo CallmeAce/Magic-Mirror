@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
 #include "Magic_Processing.h"
+#include "map/Magic_Mapping.h"
 #include <pcl/common/common_headers.h>
 
 //  Mirror Mirror on the wall..... 
