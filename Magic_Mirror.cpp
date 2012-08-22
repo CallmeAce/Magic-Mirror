@@ -25,7 +25,7 @@ void Magic_Mirror::cloud_cb_(const pcl::PointCloud<PointT>::ConstPtr &cloud)
 {  
 	*m_cloud_1 = *cloud;
  m_cloud_3 = cloud->makeShared();
-	std::cout<<"hello"<<std::endl;
+//	std::cout<<"hello"<<std::endl;
 }
 
 void Magic_Mirror::Map_updating ()
@@ -51,7 +51,9 @@ void Magic_Mirror::run()
 	interface->registerCallback (f);
 	interface->start ();
          boost::this_thread::sleep (boost::posix_time::seconds (1));
-	Magic_Processing magic;
+	Magic_Processing magic;// initial the Magic_Processing
+	Magic_Mapping m_mapping;
+
 	magic.Set_ROI (-1,3);
     		// Add grids in the visualizer
 	PointT flh_point;
@@ -84,6 +86,7 @@ void Magic_Mirror::run()
 
 			viewer->addCoordinateSystem (1.0);
 
+     		m_mapping.Map_Init(); // map initialization
 	while(!viewer->wasStopped())
 	{
 		magic.Cloud_ROI (m_cloud_1,magic.m_cloud_roi);//set ROI
@@ -95,9 +98,19 @@ void Magic_Mirror::run()
    		magic.Rotation (magic.m_proj_vector,magic.m_rot_proj_vector);// rotation
 		magic.TwoD_Convex_Hull (magic.m_rot_proj_vector,magic.m_convex_vector); //convex data
 		magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector); // the result of Magic Processing
-        std::cout<< "strange....."<<magic.m_Samp_vector.size()<<std::endl;
+        std::cout<<"the thresho_counter:"<<m_mapping.thresh_counter<<std::endl;
+		m_mapping.Map_Update(m_mapping.Raw_Map, magic.m_Samp_vector, 1);
+		if(m_mapping.thresh_counter >5)
+		{
+			m_mapping.Map_Thresholding (m_mapping.Raw_Map,3);
+			m_mapping.thresh_counter = 0; // zero the counter;
+		}
 			// Add pointcloud
 		pcl::PointCloud<pcl::PointXYZ>::Ptr v_case;
+
+//		pcl::PCDWriter writer;
+//		writer.write("c_1.pcd", *magic.m_Samp_vector[0]);
+
 		for(unsigned int i = 0;i<magic.m_cloud_cluster_points.size();i++)
 		{
 			//      viewer->addPointCloud<PointT>(magic.m_cloud_filtered,"t");
