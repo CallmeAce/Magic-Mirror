@@ -97,10 +97,10 @@ void Magic_Mirror::run()
 		magic.Projection (magic.m_cloud_cluster_points);// projection
    		magic.Rotation (magic.m_proj_vector,magic.m_rot_proj_vector);// rotation
 		magic.TwoD_Convex_Hull (magic.m_rot_proj_vector,magic.m_convex_vector); //convex data
-		magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector); // the result of Magic Processing
+//		magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector); // the result of Magic Processing
         std::cout<<"the thresho_counter:"<<m_mapping.thresh_counter<<std::endl;
-		m_mapping.Map_Update(m_mapping.Raw_Map, magic.m_Samp_vector, 1);
-		if(m_mapping.thresh_counter >5)
+		m_mapping.Map_Update(m_mapping.Raw_Map, magic.m_convex_vector, 1);
+		if(m_mapping.thresh_counter >4)
 		{
 			m_mapping.Map_Thresholding (m_mapping.Raw_Map,3);
 			m_mapping.thresh_counter = 0; // zero the counter;
@@ -125,9 +125,9 @@ void Magic_Mirror::run()
 			v_case = magic.m_cloud_cluster_points[i].makeShared();// actually it makes a copy of pointcloud, it should be deleted manually         
 			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(magic.m_rot_proj_vector[i], 0, 255, 0);
 
-			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color_1(magic.m_Samp_vector[i], 255, 0, 0);
+			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color_1(magic.m_convex_vector[i], 255, 0, 0);
 			viewer->addPointCloud<PointT>(v_case,s1.str());
-			viewer->addPointCloud<PointT>(magic.m_Samp_vector[i],single_color_1,s3.str());
+			viewer->addPointCloud<PointT>(magic.m_convex_vector[i],single_color_1,s3.str());
 		
         	}
 		
