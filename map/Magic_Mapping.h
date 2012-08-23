@@ -16,11 +16,11 @@
 /*    Magic Mapping   */
 //namespace Map
 //{
-	
+#define pi 3.14	
 class Magic_Mapping
 {
 		private:
-				const static double resolution	= 0.05;  // set the map resolution
+				const static double resolution	= 0.01;  // set the map resolution
 				int Map_Size; // In the first version, the map is square,  and set the center as the origin
 		public:
 
