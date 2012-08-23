@@ -3,7 +3,6 @@
 /* Constructor
  * 
  */
-
 Magic_Mapping::Magic_Mapping () : Map_Size(1000)   // set the map size
 {
 	counter = 0;
@@ -91,7 +90,10 @@ void Magic_Mapping::Get_Patch (Glob_Point & p_1, Glob_Point & p_2, Obj_Patch & o
     output.width = std::ceil(std::abs(p_1[0] - p_2[0])/resolution);   // ceil the value
     output.height = std::ceil(std::abs(p_1[1] - p_2[1])/resolution);   // ceil the value
 //----------------------------------------------------------------------------------------------
-
+	if(output.width ==0)
+	output.width =1;
+	if(output.height ==0)
+	output.height =1;
 }
 
 /* function overloading */
@@ -99,7 +101,7 @@ void Magic_Mapping::Get_Patch (Glob_Point & p_1, Glob_Point & p_2, Obj_Patch & o
 void Magic_Mapping::Get_Patch (std::vector<Glob_Point> & input_points, std::vector<Obj_Patch,Eigen::aligned_allocator<Obj_Patch> > & output_points)
 {
 	output_points.clear();// clear the Obj container
-	for(unsigned int i = 0; i < input_points.size(); i++)
+	for(unsigned int i = 0; i < input_points.size()-1; i++)
 	{
 		Obj_Patch temp_patch;
 		Get_Patch (input_points[i], input_points[i+1], temp_patch);
@@ -141,7 +143,7 @@ void Magic_Mapping::Tri_Grid (Obj_Patch & input, float weight, cv::Mat & output)
         {
             for (unsigned int j = input.width; j > std::floor((double) i/input.height*input.width) ; j--)
             {
-                std::cout<<" float   "<< (double) 5/input.height*input.width<<std::endl;
+        //        std::cout<<" float   "<< (double) 5/input.height*input.width<<std::endl;
                 output.at<float>(i, j-1) += weight;
             }
         }
@@ -191,12 +193,15 @@ void Magic_Mapping:: Map_Update (cv::Mat & input_Map, std::vector<pcl::PointClou
 	float g_cin_x;// input x
 	float g_cin_z;// input z
 	float g_cin_angle;// input angle
-	std::cout << " please input the gps and gyro angle data (separate with space) :" << std::endl;
-	std::cin >> g_cin_x >> g_cin_z >> g_cin_angle;
+//	float g_cin_x;// input x
+//	float g_cin_z;// input z
+//	float g_cin_angle;// input angle
+//	std::cout << " please input the gps and gyro angle data (separate with space) :" << std::endl;
+//	std::cin >> g_cin_x >> g_cin_z >> g_cin_angle;
 
-	_gps.x = g_cin_x;
-	_gps.z = g_cin_z;
-	_gps.angle = g_cin_angle;
+//	_gps.x = 0;
+//	_gps.z = 0;
+//	_gps.angle = 0;
 
 /*  save the map */
 
@@ -204,9 +209,31 @@ void Magic_Mapping:: Map_Update (cv::Mat & input_Map, std::vector<pcl::PointClou
 
 	std::sprintf(name,"map/map%03d.ppm",counter);
 	cv::imwrite(name,Raw_Map);
+		if(counter ==0|counter==7)
+		{
+			std::cout << " please input the gps and gyro angle data (separate with space) :" << std::endl;
+			std::cin >> g_cin_x >> g_cin_z >> g_cin_angle;
+
+		    _gps.x = g_cin_x;
+		    _gps.z = g_cin_z;
+		    _gps.angle = g_cin_angle/180 * pi;
+			counter =0;
+		}
+
+
 /*--------------------------*/
 	for(unsigned int i = 0; i < input_points.size(); i++)
 	{
+	//	if(thresh_counter ==0)
+	//	{
+	//		std::cout << " please input the gps and gyro angle data (separate with space) :" << std::endl;
+	//		std::cin >> g_cin_x >> g_cin_z >> g_cin_angle;
+
+	//	    _gps.x = g_cin_x;
+	//	    _gps.z = g_cin_z;
+	//	    _gps.angle = g_cin_angle/180 * pi;
+
+	//	}
 		Global_Transformation (_g_points_v,input_points[i]);// get the global points from cluster
 		Get_Patch (_g_points_v,_patches_v);
 //		char name [50];
@@ -223,7 +250,7 @@ void Magic_Mapping:: Map_Update (cv::Mat & input_Map, std::vector<pcl::PointClou
 	        std::cout<<"let :us see"<<temp_1<<std::endl;
 	        Temp += temp_1;
 			
-				
+//            std::cout<<"error ?"<<std::endl;				
 
 		}
 
