@@ -107,15 +107,20 @@ class Magic_Processing
 
 			void Sample_D_Hull (std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & input_vector, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > & output_vector );
 
+			// wall or not
+			bool is_wall(pcl::PointCloud<PointT>::Ptr & inputcloud);
+
+
 };
 
+						
 
-//----------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------------------------*/
 
 
 
 
-//----------------------------concave convex hull algorithms-----------------------------------------
+/*---------------------------concave convex hull algorithms-------------------------------------------*/
 
 
 
