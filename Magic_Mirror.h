@@ -18,14 +18,17 @@ class Magic_Mirror
 {  
 	private:
 
-    static const int Cluster_NUM = 3;              
+    static const int _Cluster_NUM = 5;              
 
 	public:
 // Variables
+		
 			typedef pcl::PointXYZ PointT;// define the point type
 			pcl::PointCloud<PointT>::Ptr m_cloud_1;// default outcome 1
 			pcl::PointCloud<PointT>::Ptr m_cloud_2;// default outcome 2
 			pcl::PointCloud<PointT>::Ptr m_cloud_3;// default outcome 2
+		    float m_inst_thresh; // for thresholding the map
+			float m_thresh;// for thresholding the map
 			std::vector<pcl::PointCloud<PointT>::Ptr,Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr > > m_objects_vector;// outcomes from 	
 
 			Magic_Mirror (); //constractor  //     
