@@ -62,6 +62,8 @@ void Magic_Mirror::run()
 	PointT slv_point;
 
 	char str[30];
+//	int v1(0);
+//	viewer->creatViewPort(0,0,0.2,0.2,v1);//creat a viewport
 	for(unsigned int i = 0; i < 200; i++)
 	{
 			flh_point.x = -40;// draw the horizontal grid coordinate
@@ -93,16 +95,18 @@ void Magic_Mirror::run()
 		magic.Octree_Compression (magic.m_cloud_roi,magic.m_cloud_downS,0.01,0.01,0.01);//down sample
 		magic.Ransac_ground_plane (magic.m_cloud_downS,magic.gr_coefficients);// use Ransac algorithm to get the ground plane parameters
 		magic.BK_Filters(magic.m_cloud_downS,magic.wall_coefficient, magic.m_cloud_filtered, 0.02);// remove ground points and wall plane points
-		magic.Clustering (magic.m_cloud_filtered, magic.m_cloud_cluster_points, 3);//clustering
+		magic.Clustering (magic.m_cloud_filtered, magic.m_cloud_cluster_points, _Cluster_NUM);//clustering
 		magic.Projection (magic.m_cloud_cluster_points);// projection
    		magic.Rotation (magic.m_proj_vector,magic.m_rot_proj_vector);// rotation
 		magic.TwoD_Convex_Hull (magic.m_rot_proj_vector,magic.m_convex_vector); //convex data
 //		magic.Sample_D_Hull (magic.m_convex_vector, magic.m_Samp_vector); // the result of Magic Processing
         std::cout<<"the thresho_counter:"<<m_mapping.thresh_counter<<std::endl;
-		m_mapping.Map_Update(m_mapping.Raw_Map, magic.m_convex_vector, 1);
+		float threshold = 1;
+		m_mapping.Map_Update(m_mapping.Raw_Map, magic.m_convex_vector, threshold);
 		if(m_mapping.thresh_counter >4)
 		{
-			m_mapping.Map_Thresholding (m_mapping.Raw_Map,3);
+		    float t_th = 3;
+        	m_mapping.Map_Thresholding (m_mapping.Raw_Map,t_th);
 			m_mapping.thresh_counter = 0; // zero the counter;
 		}
 			// Add pointcloud
