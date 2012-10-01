@@ -39,6 +39,20 @@ class Magic_Mapping
 					double tan_value;
 				};
 
+				struct Obj_Patch_1
+
+				{
+					Eigen::Vector2f Corner_p;
+					int width;
+					int height;
+		
+		//			double tan_value;
+				};
+				struct P_index
+				{
+					int x;
+					int y;
+				};
 				/*    GPS and gyroscope data structure */
 				struct GPS_point // Gps and gyro scope information
 				{
@@ -49,7 +63,7 @@ class Magic_Mapping
 						
 				std::vector<Glob_Point> _g_points_v; // container of global object points
 				std::vector<Obj_Patch,Eigen::aligned_allocator<Obj_Patch> > _patches_v; // container of patches(this is only for one cluster)
-				
+				std::vector<Eigen::Vector2f> _g_ind_v;   // bit map indices of the global points	
 				/* constructor */
 				
 				Magic_Mapping ();
@@ -63,12 +77,27 @@ class Magic_Mapping
 				// function overload
 				void Get_Patch (std::vector<Glob_Point> & input_points, std::vector<Obj_Patch,Eigen::aligned_allocator<Obj_Patch> > & output_points);
 
-				void Tri_Grid (Obj_Patch & input, float weight, cv::Mat & output); // Build the triangle occupancy map
+//TODO start
+/*     Get Patch of the whole cluster, and do the fill-in operations   */
+				int To_right (Eigen::Vector2f & p1, Eigen::Vector2f & p2, Eigen::Vector2f & p3);  
+				void P_Index(std::vector<Glob_Point>& input_points, std::vector<Eigen::Vector2f> & output); // get the indices of points in the map
 
-				void Map_Update (cv::Mat & input_Map, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr> > input_points, float weight );
+				void Get_Patch (std::vector<Glob_Point> & input_points, Obj_Patch_1 & output);
+// Inject values into covex realm
+				void Patch_Injection (Obj_Patch_1 & cluster_patch, std::vector<Eigen::Vector2f> & input_patches, float & weight, cv::Mat & output);
+				
+				void Bresenham_line(int  x0, int  y0, int  x1, int  y1, float & weight, cv::Mat & output);				
+
+				void Bresenham (Obj_Patch & input, float & weight, cv::Mat & output);
+
+//TODO ending
+
+				void Tri_Grid (Obj_Patch & input, float & weight, cv::Mat & output); // Build the triangle occupancy map
+
+				void Map_Update (cv::Mat & input_Map, std::vector<pcl::PointCloud<PointT>::Ptr, Eigen::aligned_allocator<pcl::PointCloud<PointT>::Ptr> > & input_points, float & weight );
  // add the occupancy patch to the global map
 
-				void Map_Thresholding (cv::Mat & Map, float threshold); // remove the noise from the global map
+				void Map_Thresholding (cv::Mat & Map, float  & threshold); // remove the noise from the global map
 
 };
 	
